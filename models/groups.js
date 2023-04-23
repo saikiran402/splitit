@@ -12,13 +12,13 @@ const GroupSchema = new mongoose.Schema({
     Members: [{
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Users"
+            ref: "User"
         },
         joinedAt: Date
     }],
     ownerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Users"
+        ref: "User"
     },
 });
 
