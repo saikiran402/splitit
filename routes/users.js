@@ -5,13 +5,22 @@ var jwt = require("jsonwebtoken");
 var nodemailer = require("nodemailer");
 var async = require("async");
 var crypto = require("crypto");
+const bcrypt = require('bcrypt');
 /* GET users listing. */
 router.post('/signup', async function (req, res, next) {
   // res.send('respond with a resource');
   console.log(req.body)
-  if (req.body.password != req.body.confirm_password) {
-    return res.status(409).json({ statusCode: 409, message: 'Passwords do not match' })
-  }
+
+if (req.body.password != req.body.confirm_password) {
+  return res.status(409).json({ statusCode: 409, message: 'Passwords do not match' })
+}
+  bcrypt.genSalt(saltRounds, function(err, salt) {
+    bcrypt.hash(req.body.password, salt, function(err, hash) {
+        // Store hash in your password DB.
+        req.body.password = hash;
+    });
+});
+ 
   if (req.body.phone.length != 10) {
     return res.status(409).json({ statusCode: 409, message: 'Mobile No should be 10 characters' })
   }
@@ -42,20 +51,24 @@ router.post('/login', async function (req, res, next) {
   }
   var data = await db.User.findOne({ email: req.body.email });
   if (data) {
-    if (data.password != req.body.password) {
-      return res.status(409).json({ message: 'Invalid Username or password' })
-    }
-
-
-    var id = data._id;
-    let token = jwt.sign(
-      { id },
-      'orangedooraptisthebestaptinstillwater',
-    );
-    data.token = token;
-    data.registrationToken = req.body.registrationToken;
-    data.save();
-    return res.status(200).json({ statusCode: 200, message: 'SUCCESS', jwt_token: token })
+    await bcrypt.compare(req.body.password, data.password, function(err, result) {
+      // result == true
+      if(result){
+        var id = data._id;
+        let token = jwt.sign(
+          { id },
+          'orangedooraptisthebestaptinstillwater',
+        );
+        data.token = token;
+        data.registrationToken = req.body.registrationToken;
+        data.save();
+        return res.status(200).json({ statusCode: 200, message: 'SUCCESS', jwt_token: token })
+      }else{
+        return res.status(409).json({ message: 'Invalid Username or password' })
+      }
+  });
+  
+  
   } else {
     return res.status(409).json({ statusCode: 409, message: 'NO SUCH USER EXISTS' })
   }
@@ -659,15 +672,42 @@ router.get('/reset-password/:token', async function (req, res, next) {
   var user = await db.User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
 
     if (!user) {
-      return res.status(409).json({statusCode:409,message:'Link Expired'});
+      // return res.status(409).json({statusCode:409,message:'Link Expired'});
+      res.render("link_expired", { token: req.params.token });
     } else {
        res.render("reset", { token: req.params.token });
     }
-  
-  
-  
 });
 
+router.post('/update_new_password', async function(req,res){
+    console.log(req.body);
+    var user = await db.User.findOne({ resetPasswordToken: req.body.token, resetPasswordExpires: { $gt: Date.now() } });
+    console.log(user)
+    if (!user) {
+      res.render("link_expired", { token: req.params.token });
+    } else {
+       if(req.body.password != req.body.confirm_password){
+        return res.status(409).json({statusCode:409,message:'Password does not match'});
+       }else{
+
+        await bcrypt.genSalt(2, async function(err, salt) {
+          await bcrypt.hash(req.body.password, salt, function(err, hash) {
+              // Store hash in your password DB.
+              console.log(hash)
+              req.body.password = hash;
+              user.password = req.body.password;
+              user.resetPasswordToken = null;
+              user.save();
+              return res.render('password_success')
+          });
+      });
+      
+       
+        
+       }
+    }
+
+});
 
 
 
