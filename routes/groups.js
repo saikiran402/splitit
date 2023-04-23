@@ -9,32 +9,12 @@ console.log(req.user)
 req.body.ownerId = req.user._id;
 var newGroup = await db.Group.create(req.body);
 return res.status(200).json({ statusCode: 200, message: 'Group Created Succesfully',newGroup:newGroup })
-//   GroupName: String,
-//   GroupDescription: Number,
-//   Created_on: { type: Date, default: Date.now() },
-//   Discussion: [{ name: String, message: String, createdAt: Date }],
-//   Expenses: [{
-//       type: mongoose.Schema.Types.ObjectId,
-//       ref: "Expenses"
-//   }],
-//   Members: [{
-//       userId: {
-//           type: mongoose.Schema.Types.ObjectId,
-//           ref: "Users"
-//       },
-//       joinedAt: Date
-//   }],
-//   ownerId: {
-//       type: mongoose.Schema.Types.ObjectId,
-//       ref: "Users"
-//   },
-
-
 });
 
 /* Get My Group */
-router.get('/get-groups', function(req, res, next) {
-    res.render('index', { title: 'Express' });
+router.get('/get-groups',middleware.protect, async function(req, res, next) {
+    var myGroups = await db.Group.find({ownerId:req.user._id})
+    return res.status(200).json({ statusCode: 200, message: 'My Groups',myGroups:myGroups })
 });
 
 /* Get Group by GroupId */
