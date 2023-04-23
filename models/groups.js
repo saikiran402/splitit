@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const GroupSchema = new mongoose.Schema({
     GroupName: String,
-    GroupDescription: Number,
+    GroupDescription: String,
     Created_on: { type: Date, default: Date.now() },
     Discussion: [{ name: String, message: String, createdAt: Date }],
     Expenses: [{

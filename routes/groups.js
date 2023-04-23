@@ -6,6 +6,7 @@ const db = require('../models');
 router.post('/create_group', middleware.protect, async function(req, res, next) {
 console.log(req.body);
 console.log(req.user)
+req.body.ownerId = req.user._id;
 var newGroup = await db.Group.create(req.body);
 return res.status(200).json({ statusCode: 200, message: 'Group Created Succesfully',newGroup:newGroup })
 //   GroupName: String,
