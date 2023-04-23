@@ -18,8 +18,8 @@ router.get('/get-groups',middleware.protect, async function(req, res, next) {
 });
 
 /* Get Group by GroupId */
-router.get('/get-groups/:groupId', function(req, res, next) {
-    var groupData = await db.Group.findOne({_id:req.params.groupId})
+router.get('/get-group/:groupId', async function(req, res, next) {
+    var groupData = await db.Group.findOne({_id:req.params.groupId}).populate('ownerId','name')
     return res.status(200).json({ statusCode: 200, message: 'Group Data',groupData:groupData })
 });
 
