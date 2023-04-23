@@ -38,7 +38,7 @@ router.post('/add-participant/:groupId', async function (req, res, next) {
     var groupData = await db.Group.findOne({ _id: req.params.groupId });
     if (groupData) {
         var participants = []
-        req.body.participants.forEach(list=>{
+        req.body.participants.forEach(async (list)=>{
             var userData = await db.User.findOne({ _id: list.phone })
             if(userData){
                 participants.push({
