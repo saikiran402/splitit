@@ -34,10 +34,20 @@ router.delete('/get-group/:groupId', function (req, res, next) {
 });
 
 /* Add participants to Group */
-router.post('/add-participant/:groupId', function (req, res, next) {
+router.post('/add-participant/:groupId', async function (req, res, next) {
     var groupData = await db.Group.findOne({ _id: req.params.groupId });
     if (groupData) {
-        groupData.Members = req.body.participants;
+        var participants = []
+        req.body.participants.forEach(list=>{
+            var userData = await db.User.findOne({ _id: list.phone })
+            if(userData){
+                participants.push({
+                    userId: userData._id,
+                    joinedAt:Date.now()
+                })
+            }
+        })
+        groupData.Members = participants;
         groupData.save()
         return res.status(200).json({ statusCode: 200, message: 'Added Participant to ' + groupData.name, groupData: groupData })
     } else {
