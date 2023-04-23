@@ -24,7 +24,7 @@ router.get('/get-groups/:groupId', function(req, res, next) {
 });
 
 /* Delete Group */
-router.delete('/get-groups/:groupId', function(req, res, next) {
+router.delete('/get-group/:groupId', function(req, res, next) {
     res.render('index', { title: 'Express' });
 });
   
