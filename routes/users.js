@@ -82,7 +82,7 @@ var tokenURL = "";
            token = buf.toString("hex");
            console.log('token',token);
            data.resetPasswordToken = token;
-           data.resetPasswordExpires = Date.now() + 36000; // ms, 1 minute
+           data.resetPasswordExpires = Date.now() + 36000000; // ms, 1 minute
            data.save();
            tokenURL = "http://" + req.headers.host + "/api/v1.0/user/reset-password/" + token;
            let smtpTransport = nodemailer.createTransport({
