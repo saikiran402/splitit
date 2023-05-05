@@ -6,13 +6,35 @@ var nodemailer = require("nodemailer");
 var async = require("async");
 var crypto = require("crypto");
 const bcrypt = require('bcrypt');
+
+const AesEncryption = require('aes-encryption');
+
+
+const aes = new AesEncryption()
+aes.setSecretKey('11122233344455566677788822244455555555555555555231231321313aaaff')
+// Note: secretKey must be 64 length of only valid HEX characters, 0-9, A, B, C, D, E and F
+
+
+
+async function encrypt(data){
+  const encryptedData = aes.encrypt(data)
+  return encryptedData;
+}
+
+async function decrypt(data){
+  const decryptData = aes.decrypt(data)
+  return decryptData;
+}
+
 /* GET users listing. */
 router.post('/signup', async function (req, res, next) {
   // res.send('respond with a resource');
   console.log(req.body)
+  req.body = decrypt(req.body)
 
 if (req.body.password != req.body.confirm_password) {
-  return res.status(409).json({ statusCode: 409, message: 'Passwords do not match' })
+  var respMes = encrypt('Passwords do not match');
+  return res.status(409).json({ statusCode: 409, encText: respMes })
 }
   bcrypt.genSalt(saltRounds, function(err, salt) {
     bcrypt.hash(req.body.password, salt, function(err, hash) {
@@ -22,32 +44,49 @@ if (req.body.password != req.body.confirm_password) {
 });
  
   if (req.body.phone.length != 10) {
-    return res.status(409).json({ statusCode: 409, message: 'Mobile No should be 10 characters' })
+    var respMes = encrypt('Mobile No should be 10 characters');
+    return res.status(409).json({ statusCode: 409, encText: respMes })
   }
 
   if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(req.body.email) == false) {
-    return res.status(409).json({ statusCode: 409, message: 'Invalid email' })
+    var respMes = encrypt('Invalid email');
+    return res.status(409).json({ statusCode: 409, encText: respMes })
   }
 
   await db.User.create(req.body).then((err, user) => {
-    return res.status(200).json({ statusCode: 200, message: 'Account Created' })
+    var respMes = encrypt('Account Created');
+    return res.status(200).json({ statusCode: 200, encText: respMes })
   }).catch((err) => {
     console.log(err)
     if (err.code === 11000) {
-      return res.status(409).json({ statusCode: 409, message: 'User with the given number already exists' })
+      var respMes = encrypt('User with the given number already exists');
+      return res.status(409).json({ statusCode: 409, encText: respMes })
     }
     console.log("Error", err)
-    res.status(409).json({ statusCode: 409, message: 'Error, try again later' })
+    var respMes = encrypt('Error, try again later');
+    res.status(409).json({ statusCode: 409, encText: respMes  })
   })
 });
 
+
+// router.get('/enc',async function(req,res){
+//   const encrypted = aes.encrypt("{name:'saikiran',passowrd:'hello'}")
+//   console.log(encrypted)
+// const decrypted = aes.decrypt(encrypted)
+// console.log(decrypted)
+
+// })
+
 // Login
 router.post('/login', async function (req, res, next) {
+  req.body = decrypt(req.body)
   if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(req.body.email) == false) {
-    return res.status(409).json({ statusCode: 409, message: 'Invalid email' })
+    var respMes = encrypt('Invalid Email');
+    return res.status(409).json({ statusCode: 409, encText: respMes })
   }
   if (req.body.password.length == 0) {
-    return res.status(409).json({ statusCode: 409, message: 'Invalid password' })
+    var respMes = encrypt('Invalid password');
+    return res.status(409).json({ statusCode: 409,  encText: respMes })
   }
   var data = await db.User.findOne({ email: req.body.email });
   if (data) {
@@ -62,15 +101,21 @@ router.post('/login', async function (req, res, next) {
         data.token = token;
         data.registrationToken = req.body.registrationToken;
         data.save();
-        return res.status(200).json({ statusCode: 200, message: 'SUCCESS', jwt_token: token })
+        var da = {
+          message: 'SUCCESS', jwt_token: token
+        };
+        var respMes = encrypt(JSON.stringify(da));
+        return res.status(200).json({ statusCode: 200, encText: respMes })
       }else{
-        return res.status(409).json({ message: 'Invalid Username or password' })
+        var respMes = encrypt('Invalid Username or password');
+        return res.status(409).json({encText: respMes})
       }
   });
   
   
   } else {
-    return res.status(409).json({ statusCode: 409, message: 'NO SUCH USER EXISTS' })
+    var respMes = encrypt('NO SUCH USER EXISTS');
+    return res.status(409).json({encText: respMes})
   }
 
 
@@ -79,8 +124,10 @@ router.post('/login', async function (req, res, next) {
 // zxmbsmksiqlrhufz
 // Forgor Password
 router.post('/forgot_password', async function (req, res, next) {
+  req.body = decrypt(req.body)
   if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(req.body.email) == false) {
-    return res.status(409).json({ statusCode: 409, message: 'Invalid email' })
+    var respMes = encrypt('Invalid Email');
+    return res.status(409).json({ statusCode: 409, encText: respMes })
   }
 var name = 'Praneeth Byna';
 var os = 'Google Pixel';
@@ -657,10 +704,11 @@ color: #51545E;
             // done(err, "done");
           });
         })
-
-        return res.status(200).json({statusCode:200,message:'MAIL SENT PLEASE FOLLOW THE INSTRUCTIONS'})
+        var respMes = encrypt('MAIL SENT PLEASE FOLLOW THE INSTRUCTIONS');
+        return res.status(200).json({statusCode:200,encText: respMes})
       }else{
-        return res.status(409).json({statusCode:409,message:'NO SUCH USER EXISTS'})
+        var respMes = encrypt('NO SUCH USER EXISTS');
+        return res.status(409).json({statusCode:409,encText: respMes})
       }
 
 
@@ -680,6 +728,7 @@ router.get('/reset-password/:token', async function (req, res, next) {
 });
 
 router.post('/update_new_password', async function(req,res){
+  req.body = decrypt(req.body)
     console.log(req.body);
     var user = await db.User.findOne({ resetPasswordToken: req.body.token, resetPasswordExpires: { $gt: Date.now() } });
     console.log(user)
@@ -687,7 +736,8 @@ router.post('/update_new_password', async function(req,res){
       res.render("link_expired", { token: req.params.token });
     } else {
        if(req.body.password != req.body.confirm_password){
-        return res.status(409).json({statusCode:409,message:'Password does not match'});
+        var respMes = encrypt('Password does not match');
+        return res.status(409).json({statusCode:409,encText: respMes});
        }else{
 
         await bcrypt.genSalt(2, async function(err, salt) {
