@@ -36,7 +36,7 @@ router.delete('/get-group/:groupId', function (req, res, next) {
 /* Add participants to Group */
 router.post('/add-participant/:groupId', middleware.protect, async function (req, res, next) {
     var groupData = await db.Group.findOne({ _id: req.params.groupId });
-    if (groupData.ownerId == req.user._id) {
+    if (groupData.ownerId ==  mongoose. req.user._id) {
         if (groupData) {
             var participants = []
             req.body.participants.forEach(async (list) => {

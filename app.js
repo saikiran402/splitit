@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var grouosRouter = require('./routes/groups');
@@ -44,6 +45,8 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-app.listen(3001)
+app.listen(3000,async function(req,res){
+  console.log('listening on 3000');
+})
 
 module.exports = app;
