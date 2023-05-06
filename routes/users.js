@@ -121,6 +121,49 @@ router.post('/login', async function (req, res, next) {
 
 });
 
+router.post('/login1', async function (req, res, next) {
+  // req.body = decrypt(req.body)
+  // if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(req.body.email) == false) {
+  //   var respMes = encrypt('Invalid Email');
+  //   return res.status(409).json({ statusCode: 409, encText: respMes })
+  // }
+  // if (req.body.password.length == 0) {
+  //   var respMes = encrypt('Invalid password');
+  //   return res.status(409).json({ statusCode: 409,  encText: respMes })
+  // }
+  var data = await db.User.findOne({ email: 'saikiranp1199@gmail.com' });
+  if (data) {
+    await bcrypt.compare(req.body.password, data.password, function(err, result) {
+      // result == true
+      if(result){
+        var id = data._id;
+        let token = jwt.sign(
+          { id },
+          'orangedooraptisthebestaptinstillwater',
+        );
+        data.token = token;
+        data.registrationToken = req.body.registrationToken;
+        data.save();
+        var da = {
+          message: 'SUCCESS', jwt_token: token
+        };
+        var respMes = encrypt(JSON.stringify(da));
+        return res.status(200).json({ statusCode: 200, encText: respMes })
+      }else{
+        var respMes = encrypt('Invalid Username or password');
+        return res.status(409).json({encText: respMes})
+      }
+  });
+  
+  
+  } else {
+    var respMes = encrypt('NO SUCH USER EXISTS');
+    return res.status(409).json({encText: respMes})
+  }
+
+
+});
+
 // zxmbsmksiqlrhufz
 // Forgor Password
 router.post('/forgot_password', async function (req, res, next) {
