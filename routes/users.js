@@ -135,7 +135,7 @@ router.post('/login1', async function (req, res, next) {
   if (data) {
 
       // result == true
-      if(result){
+
         var id = data._id;
         let token = jwt.sign(
           { id },
@@ -149,10 +149,7 @@ router.post('/login1', async function (req, res, next) {
         };
         // var respMes = encrypt(JSON.stringify(da));
         return res.status(200).json({ statusCode: 200, data: da })
-      }else{
-        var respMes = encrypt('Invalid Username or password');
-        return res.status(409).json({data: 'Invalid Username or password'})
-      }
+    
 
   
   } else {
