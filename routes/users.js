@@ -133,7 +133,7 @@ router.post('/login1', async function (req, res, next) {
   // }
   var data = await db.User.findOne({ email: 'saikiranp1199@gmail.com' });
   if (data) {
-    await bcrypt.compare(req.body.password, data.password, function(err, result) {
+
       // result == true
       if(result){
         var id = data._id;
@@ -153,8 +153,7 @@ router.post('/login1', async function (req, res, next) {
         var respMes = encrypt('Invalid Username or password');
         return res.status(409).json({data: 'Invalid Username or password'})
       }
-  });
-  
+
   
   } else {
     var respMes = encrypt('NO SUCH USER EXISTS');
